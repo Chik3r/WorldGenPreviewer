@@ -2,9 +2,11 @@
 using Terraria;
 using Terraria.GameContent.Generation;
 using System.Collections.Generic;
-using Terraria.World.Generation;
 using Microsoft.Xna.Framework;
 using System.Reflection;
+using Terraria.WorldBuilding;
+using Terraria.IO;
+using Terraria.GameContent.UI.States;
 
 namespace WorldGenPreviewer
 {
@@ -36,7 +38,7 @@ namespace WorldGenPreviewer
 			if (saveLockForced)
 			{
 				saveLockForced = false;
-				WorldGen.saveLock = false;
+				Main.skipMenu = false;
 			}
 		}
 
@@ -49,25 +51,24 @@ namespace WorldGenPreviewer
 			int ResetStepIndex = tasks.FindIndex(genpass => genpass.Name.Equals("Reset"));
 			if (ResetStepIndex != -1)
 			{
-				tasks.Insert(ResetStepIndex + 1, new PassLegacy("Special World Gen Progress", delegate (GenerationProgress progress)
+				tasks.Insert(ResetStepIndex + 1, new PassLegacy("Special World Gen Progress", delegate (GenerationProgress progress, GameConfiguration config)
 				{
 					progress.Message = "Setting up Special World Gen Progress";
-					Main.refreshMap = true;
-					var a = new UIWorldLoadSpecial(progress, mod);
-					Main.updateMap = false;
-					Main.mapFullscreen = true;
-					Main.mapStyle = 0;
-					Main.mapReady = true;
+					//Main.refreshMap = true;
+					var a = new UIWorldLoadSpecial(progress, Mod);
 
 					Main.MenuUI.SetState(a);
 
-					Main.mapFullscreenScale = Main.screenWidth / (float)Main.maxTilesX * 0.8f;
-					Main.mapFullscreen = true;
+					//Main.updateMap = false;
+					Main.mapStyle = 0;
+					//Main.mapFullscreen = true;
+					//Main.mapFullscreenScale = Main.screenWidth / (float)Main.maxTilesX * 0.8f;
 					Main.mapMinX = 0;
 					Main.mapMinY = 0;
 					Main.mapMaxX = Main.maxTilesX;
 					Main.mapMaxY = Main.maxTilesY;
 					Main.mapFullscreenPos = new Vector2(Main.maxTilesX / 2, Main.maxTilesY / 2);
+					Main.mapReady = true;
 				}));
 
 				// Reset Special Paused Terrain Paused ...
@@ -76,7 +77,7 @@ namespace WorldGenPreviewer
 					string name = tasks[i - 1].Name;
 					GenPass previous = tasks[i - 1];
 					GenPass next = tasks[i];
-					tasks.Insert(i, new PassLegacy("World Gen Paused", delegate (GenerationProgress progress)
+					tasks.Insert(i, new PassLegacy("World Gen Paused", delegate (GenerationProgress progress, GameConfiguration config)
 					{
 						UIWorldLoadSpecial.BadPass = next.Name == "Expand World";
 
@@ -101,7 +102,7 @@ namespace WorldGenPreviewer
 								repeatPreviousStep = false;
 								//string previousStatus = UIWorldLoadSpecial.instance.statusLabel.SetText
 								UIWorldLoadSpecial.instance.statusLabel.SetText("Status: Doing Previous Step Again");
-								previous.Apply(progress);
+								previous.Apply(progress, config);
 								//if (continueWorldGen)
 								//{
 								//	UIWorldLoadSpecial.instance.statusLabel.SetText("Status: Normal");
@@ -126,7 +127,7 @@ namespace WorldGenPreviewer
 			}
 			else
 			{
-				ErrorLogger.Log("WorldGenPreviewer mod unable to do it's thing since someone removed reset step");
+				Mod.Logger.Info("WorldGenPreviewer mod unable to do it's thing since someone removed reset step");
 			}
 		}
 

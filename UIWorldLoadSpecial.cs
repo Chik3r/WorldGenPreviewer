@@ -5,7 +5,6 @@ using Terraria.GameContent.UI.Elements;
 using Terraria.GameInput;
 using Terraria.UI;
 using Terraria.UI.Gamepad;
-using Terraria.World.Generation;
 
 using Terraria;
 using Terraria.ModLoader;
@@ -14,6 +13,10 @@ using System.IO;
 using System.Reflection;
 using Terraria.GameContent.Generation;
 using Terraria.ID;
+using Terraria.WorldBuilding;
+using ReLogic.Content;
+using Terraria.IO;
+using Terraria.GameContent;
 
 namespace WorldGenPreviewer
 {
@@ -26,11 +29,11 @@ namespace WorldGenPreviewer
 		public MethodInfo drawMap;
 		public MethodInfo drawToMap;
 		public FieldInfo genprogress;
-		public Texture2D menuTexture;
-		public Texture2D previousTexture;
-		public Texture2D playTexture;
-		public Texture2D pauseTexture;
-		public Texture2D nextTexture;
+		public Asset<Texture2D> menuTexture;
+		public Asset<Texture2D> previousTexture;
+		public Asset<Texture2D> playTexture;
+		public Asset<Texture2D> pauseTexture;
+		public Asset<Texture2D> nextTexture;
 
 		public UIPanel buttonPanel;
 		public UIPanel passesPanel;
@@ -48,25 +51,28 @@ namespace WorldGenPreviewer
 		float spacing = 8f;
 		const float panelWidth = 230;
 
+		GameTime gameTime;
+
 		public UIWorldLoadSpecial(GenerationProgress progress, Mod mod)
 		{
 			instance = this;
-			menuTexture = mod.GetTexture("menu");
-			previousTexture = mod.GetTexture("previous");
-			playTexture = mod.GetTexture("play");
-			pauseTexture = mod.GetTexture("pause");
-			nextTexture = mod.GetTexture("next");
+			menuTexture = ModContent.GetTexture("WorldGenPreviewer/menu");
+			previousTexture = ModContent.GetTexture("WorldGenPreviewer/previous");
+			playTexture = ModContent.GetTexture("WorldGenPreviewer/play");
+			pauseTexture = ModContent.GetTexture("WorldGenPreviewer/pause");
+			nextTexture = ModContent.GetTexture("WorldGenPreviewer/next");
 
 			menuButton = new UIImageButton(menuTexture);
 			previousButton = new UIImageButton(previousTexture);
 			playButton = new UIImageButton(playTexture);
 			pauseButton = new UIImageButton(pauseTexture);
 			nextButton = new UIImageButton(nextTexture);
-			cancelButton = new UIImageButton(mod.GetTexture("cancel"));
+			cancelButton = new UIImageButton(ModContent.GetTexture("WorldGenPreviewer/cancel"));
 
 			passesPanel = new UIPanel();
 			passesPanel.SetPadding(3);
 			passesPanel.Left.Pixels = listHidden ? panelWidth : 0;
+			//passesPanel.Left.Pixels = 0;
 			passesPanel.HAlign = 1f;
 			passesPanel.Top.Set(0f, 0f);
 			passesPanel.Width.Set(panelWidth, 0f);
@@ -184,7 +190,8 @@ namespace WorldGenPreviewer
 
 			// saveLock prevents save, but needs to be restored to false.
 			WorldGenPreviewerModWorld.saveLockForced = true;
-			WorldGen.saveLock = true;
+			Main.skipMenu = true;
+
 			FieldInfo methodFieldInfo = typeof(PassLegacy).GetField("_method", BindingFlags.Instance | BindingFlags.NonPublic);
 			// This method still can't cancel infinite loops in passes. This can't be avoided. We could try forcing an exception on the world gen thread like `Main.tile = null`, but we'd have to restore the reference somehow.
 			foreach (var item in passesList._items)
@@ -194,7 +201,7 @@ namespace WorldGenPreviewer
 				PassLegacy passLegacy = passitem.pass as PassLegacy;
 				if (passLegacy != null)
 				{
-					methodFieldInfo.SetValue(passLegacy, (WorldGenLegacyMethod)delegate (GenerationProgress progress) { });
+					methodFieldInfo.SetValue(passLegacy, (WorldGenLegacyMethod)delegate (GenerationProgress progress, GameConfiguration config) { });
 				}
 			}
 			WorldGenPreviewerModWorld.continueWorldGen = true;
@@ -230,7 +237,8 @@ namespace WorldGenPreviewer
 			//ErrorLogger.Log("MENU");
 			//statusLabel.SetText("Status: ??...");
 			listHidden = !listHidden;
-			passesPanel.Left.Pixels = listHidden ? panelWidth : 0;
+			//passesPanel.Left.Pixels = listHidden ? panelWidth : 0;
+			passesPanel.Width.Set(listHidden ? 0 : panelWidth, 0);
 			passesPanel.Recalculate();
 		}
 
@@ -311,7 +319,7 @@ namespace WorldGenPreviewer
 			// TODO: Look into texture contents lost on resize issue.
 			drawToMap.Invoke(Main.instance, null); // Draw to the map texture.
 			Main.spriteBatch.Begin();
-			drawMap.Invoke(Main.instance, null); // Draws map texture to screen. Also draws Tooltips.
+			drawMap.Invoke(Main.instance, new object[] { new GameTime() }); // Draws map texture to screen. Also draws Tooltips.
 
 			//int drawX = (Main.screenWidth / 2) - playTexture.Width + 10;// 100;
 			//int drawY = 180;// Main.screenHeight - 40;
@@ -408,7 +416,7 @@ namespace WorldGenPreviewer
 			int scanX = (int)((ScanLineX - offscreenXMin) * Main.mapFullscreenScale + panX);
 			int scanY = (int)((10 - offscreenYMin) * Main.mapFullscreenScale + num2);
 			int scanHeight = (int)((Main.maxTilesY - 10) * Main.mapFullscreenScale);
-			Main.spriteBatch.Draw(Main.magicPixel, new Rectangle(scanX, scanY, 1, scanHeight), Color.LightPink);
+			Main.spriteBatch.Draw(TextureAssets.MagicPixel.Value, new Rectangle(scanX, scanY, 1, scanHeight), Color.LightPink);
 
 			/*
 			if (WorldGenPreviewerModWorld.structures_structures != null)
@@ -435,12 +443,18 @@ namespace WorldGenPreviewer
 		//float oldTotalProgress = -1f;
 		int ScanLineX = 0;
 
+		public override void Update(GameTime _gameTime)
+		{
+			gameTime = _gameTime;
+			base.Update(_gameTime);
+		}
+
 		//float scanprogress = -1f;
 
 
 		private void UpdateGamepadSquiggle()
 		{
-			Vector2 value = new Vector2((float)Math.Cos((double)(Main.GlobalTime * 6.28318548f)), (float)Math.Sin((double)(Main.GlobalTime * 6.28318548f * 2f))) * new Vector2(30f, 15f) + Vector2.UnitY * 20f;
+			Vector2 value = new Vector2((float)Math.Cos((double)(Main.GlobalTimeWrappedHourly * 6.28318548f)), (float)Math.Sin((double)(Main.GlobalTimeWrappedHourly * 6.28318548f * 2f))) * new Vector2(30f, 15f) + Vector2.UnitY * 20f;
 			UILinkPointNavigator.Points[3000].Unlink();
 			UILinkPointNavigator.SetPosition(3000, new Vector2((float)Main.screenWidth, (float)Main.screenHeight) / 2f + value);
 		}

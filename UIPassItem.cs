@@ -2,7 +2,7 @@
 using Terraria.GameInput;
 using Terraria.UI;
 using Terraria.UI.Gamepad;
-using Terraria.World.Generation;
+using Terraria.WorldBuilding;
 
 using Terraria;
 using Terraria.ModLoader;
@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using System;
 using Terraria.GameContent.Generation;
 using System.Reflection;
+using Terraria.IO;
 
 namespace WorldGenPreviewer
 {
@@ -46,7 +47,7 @@ namespace WorldGenPreviewer
 			{
 				//private WorldGenLegacyMethod _method;
 				FieldInfo methodFieldInfo = typeof(PassLegacy).GetField("_method", BindingFlags.Instance | BindingFlags.NonPublic);
-				methodFieldInfo.SetValue(passLegacy, (WorldGenLegacyMethod) delegate (GenerationProgress progress) { });
+				methodFieldInfo.SetValue(passLegacy, (WorldGenLegacyMethod) delegate (GenerationProgress progress, GameConfiguration config) { });
 			}
 			UIWorldLoadSpecial.instance.passesList.Remove(this);
 		}
