@@ -3,10 +3,8 @@ using Terraria;
 using Terraria.GameContent.Generation;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using System.Reflection;
 using Terraria.WorldBuilding;
 using Terraria.IO;
-using Terraria.GameContent.UI.States;
 
 namespace WorldGenPreviewer
 {
@@ -54,15 +52,15 @@ namespace WorldGenPreviewer
 				tasks.Insert(ResetStepIndex + 1, new PassLegacy("Special World Gen Progress", delegate (GenerationProgress progress, GameConfiguration config)
 				{
 					progress.Message = "Setting up Special World Gen Progress";
-					//Main.refreshMap = true;
+					Main.refreshMap = true;
 					var a = new UIWorldLoadSpecial(progress, Mod);
 
 					Main.MenuUI.SetState(a);
 
-					//Main.updateMap = false;
+					Main.updateMap = false;
 					Main.mapStyle = 0;
-					//Main.mapFullscreen = true;
-					//Main.mapFullscreenScale = Main.screenWidth / (float)Main.maxTilesX * 0.8f;
+					Main.mapFullscreen = true;
+					Main.mapFullscreenScale = Main.screenWidth / (float)Main.maxTilesX * 0.8f;
 					Main.mapMinX = 0;
 					Main.mapMinY = 0;
 					Main.mapMaxX = Main.maxTilesX;
@@ -127,7 +125,7 @@ namespace WorldGenPreviewer
 			}
 			else
 			{
-				Mod.Logger.Info("WorldGenPreviewer mod unable to do it's thing since someone removed reset step");
+				Mod.Logger.Error("WorldGenPreviewer mod unable to do it's thing since someone removed reset step");
 			}
 		}
 

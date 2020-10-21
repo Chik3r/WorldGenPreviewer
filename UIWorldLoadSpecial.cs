@@ -51,8 +51,6 @@ namespace WorldGenPreviewer
 		float spacing = 8f;
 		const float panelWidth = 230;
 
-		GameTime gameTime;
-
 		public UIWorldLoadSpecial(GenerationProgress progress, Mod mod)
 		{
 			instance = this;
@@ -72,7 +70,6 @@ namespace WorldGenPreviewer
 			passesPanel = new UIPanel();
 			passesPanel.SetPadding(3);
 			passesPanel.Left.Pixels = listHidden ? panelWidth : 0;
-			//passesPanel.Left.Pixels = 0;
 			passesPanel.HAlign = 1f;
 			passesPanel.Top.Set(0f, 0f);
 			passesPanel.Width.Set(panelWidth, 0f);
@@ -237,8 +234,7 @@ namespace WorldGenPreviewer
 			//ErrorLogger.Log("MENU");
 			//statusLabel.SetText("Status: ??...");
 			listHidden = !listHidden;
-			//passesPanel.Left.Pixels = listHidden ? panelWidth : 0;
-			passesPanel.Width.Set(listHidden ? 0 : panelWidth, 0);
+			passesPanel.Left.Pixels = listHidden ? panelWidth : 0;
 			passesPanel.Recalculate();
 		}
 
@@ -314,6 +310,8 @@ namespace WorldGenPreviewer
 				}
 				Main.mapFullscreenScale *= 1f + num7 * 0.3f;
 			}
+
+			Main.FixUIScale();
 
 			Main.spriteBatch.End();
 			// TODO: Look into texture contents lost on resize issue.
@@ -442,12 +440,6 @@ namespace WorldGenPreviewer
 		}
 		//float oldTotalProgress = -1f;
 		int ScanLineX = 0;
-
-		public override void Update(GameTime _gameTime)
-		{
-			gameTime = _gameTime;
-			base.Update(_gameTime);
-		}
 
 		//float scanprogress = -1f;
 
