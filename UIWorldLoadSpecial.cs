@@ -51,7 +51,7 @@ namespace WorldGenPreviewer
 		float spacing = 8f;
 		const float panelWidth = 230;
 
-		public UIWorldLoadSpecial(GenerationProgress progress, Mod mod)
+		public UIWorldLoadSpecial(GenerationProgress progress)
 		{
 			instance = this;
 			menuTexture = ModContent.GetTexture("WorldGenPreviewer/menu");
@@ -311,7 +311,7 @@ namespace WorldGenPreviewer
 				Main.mapFullscreenScale *= 1f + num7 * 0.3f;
 			}
 
-			Main.FixUIScale();
+			Main.SettingDontScaleMainMenuUp = true;
 
 			Main.spriteBatch.End();
 			// TODO: Look into texture contents lost on resize issue.

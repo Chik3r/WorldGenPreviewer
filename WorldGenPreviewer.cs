@@ -51,9 +51,10 @@ namespace WorldGenPreviewer
 			{
 				tasks.Insert(ResetStepIndex + 1, new PassLegacy("Special World Gen Progress", delegate (GenerationProgress progress, GameConfiguration config)
 				{
+					Main.FixUIScale();
 					progress.Message = "Setting up Special World Gen Progress";
 					Main.refreshMap = true;
-					var a = new UIWorldLoadSpecial(progress, Mod);
+					var a = new UIWorldLoadSpecial(progress);
 
 					Main.MenuUI.SetState(a);
 
