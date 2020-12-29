@@ -23,7 +23,7 @@ namespace WorldGenPreviewer
 		}
 	}
 
-	internal class WorldGenPreviewerModWorld : ModWorld
+	internal class WorldGenPreviewerModWorld : ModSystem
 	{
 		internal static bool saveLockForced = false;
 		internal static bool continueWorldGen = true;
@@ -31,7 +31,7 @@ namespace WorldGenPreviewer
 		internal static bool repeatPreviousStep = false;
 		internal static List<GenPass> generationPasses;
 
-		public override void Initialize()
+		public override void OnWorldLoad()
 		{
 			if (saveLockForced)
 			{
