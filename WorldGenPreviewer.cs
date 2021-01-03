@@ -20,6 +20,7 @@ namespace WorldGenPreviewer
 		public override void Unload()
 		{
 			instance = null;
+			Main.skipMenu = false;
 		}
 	}
 
@@ -46,6 +47,7 @@ namespace WorldGenPreviewer
 			// Reset Terrain
 			// Reset Special Terrain
 			// or after reset
+			Main.skipMenu = false; // Reset skipMenu to false so that worlds can be saved
 			int ResetStepIndex = tasks.FindIndex(genpass => genpass.Name.Equals("Reset"));
 			if (ResetStepIndex != -1)
 			{
