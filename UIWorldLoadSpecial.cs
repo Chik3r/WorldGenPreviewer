@@ -392,7 +392,7 @@ namespace WorldGenPreviewer
 
 			int tileX = (int)((-panX + (float)Main.mouseX) / Main.mapFullscreenScale + offscreenXMin);
 			int tileY = (int)((-num2 + (float)Main.mouseY) / Main.mapFullscreenScale + offscreenYMin);
-			if (WorldGen.InWorld(tileX, tileY, 10) && Main.tile[tileX, tileY].active())
+			if (WorldGen.InWorld(tileX, tileY, 10) && Main.tile[tileX, tileY].IsActive)
 			{
 				int tileType = Main.tile[tileX, tileY].type;
 				string tileName = Lang._mapLegendCache.FromTile(Main.Map[tileX, tileY], tileX, tileY);
