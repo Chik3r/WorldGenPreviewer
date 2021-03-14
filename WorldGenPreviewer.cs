@@ -2,9 +2,12 @@
 using Terraria;
 using Terraria.GameContent.Generation;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.Xna.Framework;
+using Terraria.GameContent.UI.Elements;
 using Terraria.WorldBuilding;
 using Terraria.IO;
+using Terraria.UI;
 
 namespace WorldGenPreviewer
 {
@@ -31,6 +34,8 @@ namespace WorldGenPreviewer
 		internal static bool pauseAfterContinue = false;
 		internal static bool repeatPreviousStep = false;
 		internal static List<GenPass> generationPasses;
+
+		private static readonly FieldInfo _uiListItemsField = typeof(UIList).GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance);
 
 		public override void OnWorldLoad()
 		{
@@ -82,7 +87,9 @@ namespace WorldGenPreviewer
 					{
 						UIWorldLoadSpecial.BadPass = next.Name == "Expand World";
 
-						foreach (var item in UIWorldLoadSpecial.instance.passesList._items)
+						List<UIElement> items = (List<UIElement>) _uiListItemsField.GetValue(UIWorldLoadSpecial.instance.passesList);
+
+						foreach (var item in items)
 						{
 							UIPassItem passitem = item as UIPassItem;
 							if (passitem.pass == previous)

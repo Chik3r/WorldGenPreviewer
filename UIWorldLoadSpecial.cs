@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
+using System.Collections.Generic;
 using Terraria.GameContent.UI.Elements;
 using Terraria.GameInput;
 using Terraria.UI;
@@ -50,6 +51,8 @@ namespace WorldGenPreviewer
 
 		float spacing = 8f;
 		const float panelWidth = 230;
+
+		private static readonly FieldInfo _uiListItemsField = typeof(UIList).GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance);
 
 		public UIWorldLoadSpecial(GenerationProgress progress)
 		{
@@ -190,8 +193,11 @@ namespace WorldGenPreviewer
 			Main.skipMenu = true;
 
 			FieldInfo methodFieldInfo = typeof(PassLegacy).GetField("_method", BindingFlags.Instance | BindingFlags.NonPublic);
+
+			List<UIElement> items = (List<UIElement>) _uiListItemsField.GetValue(passesList);
+			
 			// This method still can't cancel infinite loops in passes. This can't be avoided. We could try forcing an exception on the world gen thread like `Main.tile = null`, but we'd have to restore the reference somehow.
-			foreach (var item in passesList._items)
+			foreach (var item in items)
 			{
 				UIPassItem passitem = item as UIPassItem;
 
